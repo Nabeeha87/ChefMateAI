@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build output
+dist
+**/dist
+
+# Environment files (secrets must be injected at runtime, not baked in)
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.example
+
+# Git
+.git
+.gitignore
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Docs
+README.md
+
+# Supabase local config (secrets managed separately)
+supabase/.temp

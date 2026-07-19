@@ -1,0 +1,22 @@
+version: 1.0
+runtime: docker
+build:
+  docker:
+    dockerfile: Dockerfile
+    context: .
+run:
+  # AWS App Runner reads the port from this setting and exposes it over HTTPS
+  port: 3001
+  startCommand: node src/server.js
+  env:
+    - name: NODE_ENV
+      value: production
+    - name: PORT
+      value: "3001"
+    # Set these as App Runner "secrets" or environment variables in the console:
+    # - name: OPENAI_API_KEY
+    #   value: (set in AWS console / Secrets Manager)
+    # - name: CORS_ORIGIN
+    #   value: https://your-apprunner-domain.awsapprunner.com
+  network:
+    port: 3001
