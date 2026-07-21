@@ -1,5 +1,5 @@
 # ============================================================
-# ChefMate AI — Multi-stage Dockerfile
+# ChefMate  — Multi-stage Dockerfile
 # Stage 1: Build the Vite frontend
 # Stage 2: Set up the Express backend + serve static frontend
 # ============================================================

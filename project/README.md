@@ -2,9 +2,9 @@
 
 > Turn your ingredients into delicious meals with AI.
 
-ChefMate AI is a production-quality full-stack web application that generates personalized recipes based on the ingredients you already have at home. It uses an LLM (OpenAI GPT) to craft recipes tailored to your cuisine, dietary preferences, cooking time, and skill level — with streaming responses so text appears progressively.
+ChefMate is a production-quality full-stack web application that generates personalized recipes based on the ingredients you already have at home. It uses an LLM (OpenAI GPT) to craft recipes tailored to your cuisine, dietary preferences, cooking time, and skill level — with streaming responses so text appears progressively.
 
-![ChefMate AI](public/chef-hat.svg)
+![ChefMate](public/chef-hat.svg)
 
 ---
 

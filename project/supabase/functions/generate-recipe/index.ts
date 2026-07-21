@@ -3,8 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
 interface RecipeRequest {
@@ -18,17 +17,17 @@ interface RecipeRequest {
 const SYSTEM_PROMPT = `
 You are ChefMate AI, an expert culinary assistant.
 
-Create ONE realistic recipe using the user's ingredients.
+Create delicious, realistic recipes using the user's available ingredients.
 
-IMPORTANT RULES:
-- Return ONLY JSON.
-- No markdown.
-- No explanations.
-- No text before or after JSON.
-- Do not use triple backticks.
-- Always follow the exact JSON structure below.
+Rules:
+- Prioritize the ingredients the user already has.
+- Respect dietary preferences.
+- Match the requested cuisine.
+- Stay within the requested cooking time.
+- Match the requested difficulty.
+- Never produce unsafe cooking advice.
 
-JSON FORMAT:
+Return ONLY valid JSON.
 
 {
   "recipeName": "",
@@ -59,17 +58,17 @@ ${req.ingredients}
 Cuisine:
 ${req.cuisine}
 
-Diet Preference:
+Diet:
 ${req.dietaryPreference}
 
-Cooking Time:
+Maximum Cooking Time:
 ${req.cookingTime}
 
 Difficulty:
 ${req.difficulty}
 
-Create one recipe.
-Remember: Output ONLY valid JSON.
+Generate ONE recipe.
+Return ONLY JSON.
 `;
 }
 
@@ -83,91 +82,88 @@ Deno.serve(async (req: Request) => {
   try {
     const body: RecipeRequest = await req.json();
 
-    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
-
-    if (!apiKey) {
+    if (!body.ingredients?.trim()) {
       return new Response(
-        JSON.stringify({
-          error: "Missing OPENROUTER_API_KEY secret."
-        }),
+        JSON.stringify({ error: "Ingredients are required." }),
         {
-          status: 500,
+          status: 400,
           headers: {
             ...corsHeaders,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
     }
 
-    const openRouterResponse = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:5173/",
-          "X-Title": "ChefMate AI"
-        },
-        body: JSON.stringify({
-          model: "qwen/qwen3-8b:free",
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
 
-          messages: [
-            {
-              role: "system",
-              content: SYSTEM_PROMPT
-            },
-            {
-              role: "user",
-              content: buildPrompt(body)
-            }
-          ],
+    if (!apiKey) {
+      return new Response(
+        JSON.stringify({ error: "Missing OPENROUTER_API_KEY secret." }),
+        {
+          status: 500,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
 
-          temperature: 0.5,
-          max_tokens: 1000
-        })
-      }
-    );
-
+    const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://chefmateai.onrender.com",
+        "X-Title": "Recipe Generator App"
+      },
+      body: JSON.stringify({
+        model: "google/gemma-2-9b-it:free",
+        messages: [
+          {
+            role: "system",
+            content: SYSTEM_PROMPT,
+          },
+          {
+            role: "user",
+            content: buildPrompt(body),
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 1200,
+      }),
+    });
 
     if (!openRouterResponse.ok) {
-      const error = await openRouterResponse.text();
-
+      const errorText = await openRouterResponse.text();
       return new Response(
         JSON.stringify({
           error: "OpenRouter error",
-          details: error
+          details: errorText,
         }),
         {
           status: openRouterResponse.status,
           headers: {
             ...corsHeaders,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
     }
 
-
     const result = await openRouterResponse.json();
-
     let recipeText = result.choices?.[0]?.message?.content;
-
 
     if (!recipeText) {
       throw new Error("Empty AI response");
     }
 
-
-    // Remove markdown if AI adds it
     recipeText = recipeText
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-
-    // Extract JSON if AI adds extra words
     const start = recipeText.indexOf("{");
     const end = recipeText.lastIndexOf("}");
 
@@ -175,35 +171,28 @@ Deno.serve(async (req: Request) => {
       recipeText = recipeText.substring(start, end + 1);
     }
 
-
     const parsedRecipe = JSON.parse(recipeText);
 
-
-    return new Response(
-      JSON.stringify(parsedRecipe),
-      {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
+    return new Response(JSON.stringify(parsedRecipe), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    });
 
   } catch (error) {
-
     return new Response(
       JSON.stringify({
         error: "Failed to generate recipe.",
-        details: error instanceof Error ? error.message : String(error)
+        details: error instanceof Error ? error.message : String(error),
       }),
       {
         status: 500,
         headers: {
           ...corsHeaders,
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
   }
