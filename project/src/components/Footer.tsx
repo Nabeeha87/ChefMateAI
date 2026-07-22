@@ -10,7 +10,7 @@ export function Footer() {
               <ChefHat className="h-4 w-4 text-white" />
             </div>
             <span className="font-display text-sm font-bold">
-              ChefMate <span className="gradient-text">AI</span>
+              ChefMate <span className="gradient-text"></span>
             </span>
           </div>
           <p className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
