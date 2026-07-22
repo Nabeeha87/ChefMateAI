@@ -97,20 +97,21 @@ Deno.serve(async (req: Request) => {
 
     const apiKey = Deno.env.get("OPENROUTER_API_KEY");
 
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: "Missing OPENROUTER_API_KEY secret." }),
-        {
-          status: 500,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+if (!apiKey) {
+  return new Response(
+    JSON.stringify({ error: "Missing OPENROUTER_API_KEY secret." }),
+    {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
     }
+  );
+}
 
-    const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+// Leave this code below unchanged
+const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -119,7 +120,7 @@ Deno.serve(async (req: Request) => {
         "X-Title": "Recipe Generator App"
       },
       body: JSON.stringify({
-        model: "google/gemma-2-9b-it:free",
+      model: "google/gemma-3-4b-it:free",
         messages: [
           {
             role: "system",
