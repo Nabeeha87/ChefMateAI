@@ -26,7 +26,7 @@ export function Header({ theme, onToggleTheme, onNavClick }: HeaderProps) {
               <ChefHat className="h-5 w-5 text-white" strokeWidth={2.5} />
             </div>
             <span className="font-display text-lg font-bold tracking-tight">
-              ChefMate <span className="gradient-text">AI</span>
+              ChefMate <span className="gradient-text"></span>
             </span>
           </button>
 
